@@ -7,7 +7,41 @@ defaults:
   runtime: tmux
   agent: claude-code
   workspace: worktree
-  notifiers: [desktop]
+  notifiers: [desktop, slack]
+
+notifiers:
+  slack:
+    plugin: slack
+    webhook: ${SLACK_WEBHOOK_URL}
+    channel: "#agent-updates"
+
+notificationRouting:
+  urgent: [desktop, slack]
+  action: [desktop, slack]
+  warning: [slack]
+  info: [slack]
+
+reactions:
+  ci-failed:
+    auto: true
+    action: send-to-agent
+    retries: 2
+    escalateAfter: 2
+
+  changes-requested:
+    auto: true
+    action: send-to-agent
+    escalateAfter: 30m
+
+  approved-and-green:
+    auto: false
+    action: notify
+    priority: action
+
+  agent-stuck:
+    threshold: 10m
+    action: notify
+    priority: urgent
 
 projects:
   ao:
@@ -26,3 +60,20 @@ projects:
       - "pnpm install"
     agentConfig:
       permissions: skip
+
+  # Add your repos below — copy this block and fill in the values
+  # my-project:
+  #   repo: YOUR_ORG/YOUR_REPO
+  #   path: ~/path/to/local/clone
+  #   defaultBranch: main
+  #   scm:
+  #     plugin: github
+  #   tracker:
+  #     plugin: github
+  #   agentConfig:
+  #     permissions: skip
+  #     model: claude-opus-4-7
+  #   agentRules: |
+  #     Always run tests before committing.
+  #     Use conventional commits (feat:, fix:, chore:).
+  #     Open a draft PR early; mark ready when done.
