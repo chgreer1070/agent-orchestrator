@@ -7,7 +7,41 @@ defaults:
   runtime: tmux
   agent: claude-code
   workspace: worktree
-  notifiers: [desktop]
+  notifiers: [desktop, slack]
+
+notifiers:
+  slack:
+    plugin: slack
+    webhook: ${SLACK_WEBHOOK_URL}
+    channel: "#agent-updates"
+
+notificationRouting:
+  urgent: [desktop, slack]
+  action: [desktop, slack]
+  warning: [slack]
+  info: [slack]
+
+reactions:
+  ci-failed:
+    auto: true
+    action: send-to-agent
+    retries: 2
+    escalateAfter: 2
+
+  changes-requested:
+    auto: true
+    action: send-to-agent
+    escalateAfter: 30m
+
+  approved-and-green:
+    auto: false
+    action: notify
+    priority: action
+
+  agent-stuck:
+    threshold: 10m
+    action: notify
+    priority: urgent
 
 projects:
   ao:
@@ -26,3 +60,61 @@ projects:
       - "pnpm install"
     agentConfig:
       permissions: skip
+
+  legal-work:
+    name: Legal Work
+    repo: chgreer1070/Legal-Work
+    path: ~/Legal-Work
+    defaultBranch: main
+    scm:
+      plugin: github
+    tracker:
+      plugin: github
+    agentConfig:
+      permissions: skip
+      model: claude-opus-4-7
+    agentRules: |
+      This is a Python Flask app with two features:
+      1. Outlook-to-PDF converter (app.py, converter.py)
+      2. FX Recovery System (fx_app.py) using the Anthropic SDK
+      Run `pip install -r requirements.txt` before starting work.
+      Run `pytest` before committing — tests live in the tests/ directory.
+      Use conventional commits (feat:, fix:, chore:).
+      Open a draft PR early; mark ready when done.
+
+  pokemon-analyzer:
+    name: Pokemon Analyzer (Contract Analyzer)
+    repo: chgreer1070/Pok-mon-analyzer-
+    path: ~/Pok-mon-analyzer
+    defaultBranch: main
+    scm:
+      plugin: github
+    tracker:
+      plugin: github
+    agentConfig:
+      permissions: skip
+      model: claude-opus-4-7
+    agentRules: |
+      This is a Python Flask contract analyzer app (analyzer.py, app.py).
+      Run `pip install -r requirements.txt` before starting work.
+      Run `python tests.py` to run the test suite before committing.
+      Use conventional commits (feat:, fix:, chore:).
+      Open a draft PR early; mark ready when done.
+
+  pokemon-analyzer-new:
+    name: Pokemon Analyzer New (Clause Dependency Matrix)
+    repo: chgreer1070/Pok-mon-analyzer-new
+    path: ~/Pok-mon-analyzer-new
+    defaultBranch: main
+    scm:
+      plugin: github
+    tracker:
+      plugin: github
+    agentConfig:
+      permissions: skip
+      model: claude-opus-4-7
+    agentRules: |
+      This is a Python project focused on clause dependency matrix parsing.
+      Main file: clause_dependency_matrix.py
+      Use conventional commits (feat:, fix:, chore:).
+      Open a draft PR early; mark ready when done.
